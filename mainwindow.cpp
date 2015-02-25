@@ -16,7 +16,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->progressBar->setRange(0,1);
     ui->progressBar->setValue(0);
-    readIP_ADDRESSES();
+    ops = new INIOps(CONFIG_FILE);
+    IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
+    IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
     ui->stateComboBox->addItem("Enable");
     ui->stateComboBox->addItem("Disable");
     for (int i = 0; i < MAX; i++) {
@@ -63,21 +65,13 @@ void MainWindow::on_powerButton_clicked()
     ui->progressBar->setRange(0,1);
     ui->progressBar->setValue(1);
     writeTextBrowser();
-
 }
 
-void MainWindow::readIP_ADDRESSES()
-{
-    INIReader reader(CONFIG_FILE);
-    if(reader.ParseError() < 0)
-    {
-        qDebug() << "Can't load config file";
-    }
-
-    IP_ADDRESS_ARDUINO_1 = reader.Get("arduino","arduinoOneIP","None Provided").c_str();
-    IP_ADDRESS_ARDUINO_2 = reader.Get("arduino","arduinoTwoIP","None Provided").c_str();
-}
-
+/**
+ * @brief MainWindow::isDisabled
+ * @param str
+ * @return
+ */
 QString MainWindow::isDisabled(QString str)
 {
     INIReader reader(CONFIG_FILE);
@@ -85,29 +79,6 @@ QString MainWindow::isDisabled(QString str)
         qDebug() << "Can't load config file.";
 
     return reader.Get("disabled",str.toStdString().c_str(),"false").c_str();
-}
-
-void MainWindow::writeINI()
-{
-
-    remove(CONFIG_FILE);
-    QFile file(CONFIG_FILE);
-    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
-        return;
-
-    QTextStream out(&file);
-
-    out << "; config file for pwrMGMTUI\n"
-        << "\n"
-        << "[arduino]\n"
-        << "arduinoOneIP = " << IP_ADDRESS_ARDUINO_1 << "\n"
-        << "arduinoTwoIP = " << IP_ADDRESS_ARDUINO_2 << "\n"
-        << "\n"
-        << "[disabled]\n";
-    for (int i = 0; i < MAX; i++)
-        if (dsArray[i][1] == "Gray")
-            out << dsArray[i][0] << " = disabled\n";
-    file.close();
 }
 
 void MainWindow::writeTextBrowser()
@@ -134,7 +105,7 @@ void MainWindow::writeTextBrowser()
 
 void MainWindow::on_actionChange_IP_Address_1_triggered()
 {
-    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_1,1,this);
+    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_1,1,dsArray,this);
     myPopup->resize(300,125);
     myPopup->setWindowTitle("IP Change Arduino 1");
     myPopup->exec();
@@ -142,7 +113,7 @@ void MainWindow::on_actionChange_IP_Address_1_triggered()
 
 void MainWindow::on_actionChange_IP_Address_2_triggered()
 {
-    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_2,2,this);
+    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_2,2,dsArray,this);
     myPopup->resize(300,125);
     myPopup->setWindowTitle("IP Change Arduino 2");
     myPopup->exec();
@@ -165,6 +136,9 @@ QString GetStdoutFromCommand(QString cmd)
     return data;
 }
 
+/**
+ * @brief MainWindow::on_pushButton_clicked
+ */
 void MainWindow::on_pushButton_clicked()
 {
     QString ds_state;
@@ -190,7 +164,7 @@ void MainWindow::on_pushButton_clicked()
     if (ds_state == "Disable")
     {
         dsArray[position][1] = "Gray";
-        writeINI();
+        ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,dsArray);
         GetStdoutFromCommand(powerOff);
 
     }
@@ -198,12 +172,13 @@ void MainWindow::on_pushButton_clicked()
     {
         //safetyCheck(position);  // function call to check the safety of detection section
         dsArray[position][1] = "Green";
-        writeINI();
+        ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,dsArray);
         GetStdoutFromCommand(powerOn);
     }
     writeTextBrowser();
     ui->progressBar->setValue(1);
 }
+
 
 void MainWindow::safetyCheck(int position)
 {

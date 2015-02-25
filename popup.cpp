@@ -7,21 +7,34 @@ QString ipAddrHolder;
 int arduinoNum;
 bool ipSet = false;
 
-popup::popup(QString addr,int arduino, QWidget *parent) :
+popup::popup(QString addr,int arduino, QString arrayIN[I][J], QWidget *parent) :
     QDialog(parent),
     ui(new Ui::popup)
 {
     ui->setupUi(this);
+    ops = new INIOps(CONFIG_FILE);
     ui->curentAddr->setText(addr);
+    for (int i = 0; i < I; i++)
+        for (int j = 0; j < J; j++)
+            array[i][j] = arrayIN[i][j];
     arduinoNum = arduino;
-    readIP_ADDRESSES();
+    IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
+    IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
+
 }
 
+/**
+ * @brief popup::~popup
+ */
 popup::~popup()
 {
     delete ui;
 }
 
+/**
+ * @brief popup::on_newAddress_textEdited
+ * @param arg1
+ */
 void popup::on_newAddress_textEdited(const QString &arg1)
 {
     QRegExp ipValidator( "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}" );
@@ -29,45 +42,17 @@ void popup::on_newAddress_textEdited(const QString &arg1)
     ui->newAddress->setValidator(validator);
 }
 
-void popup::writeINI()
-{
-    remove(CONFIG_FILE);
-    QFile file(CONFIG_FILE);
-    if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
-        return;
-
-    QTextStream out(&file);
-
-    out << "; config file for pwrMGMTUI\n"
-        << "\n"
-        << "[arduino]\n"
-        << "arduinoOneIP = " << IP_ADDRESS_ARDUINO_1 << "\n"
-        << "arduinoTwoIP = " << IP_ADDRESS_ARDUINO_2 << "\n"
-        << "\n"
-        << "[disabled]\n";
-    for (int i = 0; i < MAX; i++)
-        if (dsArray[i][1] == "Gray")
-            out << dsArray[i][0] << " = disabled\n";
-    file.close();
-}
-
-void popup::readIP_ADDRESSES()
-{
-    INIReader reader(CONFIG_FILE);
-    if(reader.ParseError() < 0)
-    {
-        qDebug() << "Can't load config file";
-    }
-
-    IP_ADDRESS_ARDUINO_1 = reader.Get("arduino","arduinoOneIP","None Provided").c_str();
-    IP_ADDRESS_ARDUINO_2 = reader.Get("arduino","arduinoTwoIP","None Provided").c_str();
-}
-
+/**
+ * @brief popup::on_newAddress_editingFinished
+ */
 void popup::on_newAddress_editingFinished()
 {
     ipSet = true;
 }
 
+/**
+ * @brief popup::on_setButton_clicked
+ */
 void popup::on_setButton_clicked()
 {
     if(ipSet)
@@ -78,20 +63,23 @@ void popup::on_setButton_clicked()
             {
                 IP_ADDRESS_ARDUINO_1 = ui->newAddress->text();
                 ui->curentAddr->setText(IP_ADDRESS_ARDUINO_1);
-                writeINI();
+                ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,array);
             }
         } else {
             if (IP_ADDRESS_ARDUINO_1.compare(ui->newAddress->text()))
             {
                 IP_ADDRESS_ARDUINO_2 = ui->newAddress->text();
                 ui->curentAddr->setText(IP_ADDRESS_ARDUINO_2);
-                writeINI();
+                ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,array);
             }
         }
-
         ipSet = false;
     }
 }
+
+/**
+ * @brief popup::on_closeButton_clicked
+ */
 void popup::on_closeButton_clicked()
 {
     this->close();

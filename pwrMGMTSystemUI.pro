@@ -16,13 +16,15 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     popup.cpp \
     inireader.cpp \
-    ini.cpp
+    ini.cpp \
+    iniops.cpp
 
 HEADERS  += mainwindow.h \
     popup.h \
     inireader.h \
     ini.h \
-    config.h
+    config.h \
+    iniops.h
 
 FORMS    += mainwindow.ui \
     popup.ui

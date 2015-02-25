@@ -18,7 +18,7 @@
 #include "wait.h"
 #include "popup.h"
 #include "inireader.h"
-//#include "config.h"
+#include "iniops.h"
 
 namespace Ui {
 class MainWindow;
@@ -43,9 +43,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void readIP_ADDRESSES();
+    INIOps * ops;
     void writeTextBrowser();
-    void writeINI();
     void safetyCheck(int position);
     QString isDisabled(QString str);
 };
