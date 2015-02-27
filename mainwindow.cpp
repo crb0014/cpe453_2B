@@ -133,6 +133,7 @@ QString GetStdoutFromCommand(QString cmd)
 void MainWindow::on_pushButton_clicked()
 {
     ops = new INIOps(CONFIG_FILE);
+    safety = new SafetySys(CONFIG_FILE);
     QString ds_state;
     int position;
     position = ui->dsComboBox->currentIndex();
@@ -155,21 +156,41 @@ void MainWindow::on_pushButton_clicked()
 
     if (ds_state == "Disable")
     {
-        dsArray[position][1] = "Gray";
-        ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
-        GetStdoutFromCommand(powerOff);
-
+        if (safety->isSafe(dsArray[position][0]))
+        {
+            dsArray[position][1] = "Gray";
+            ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
+            GetStdoutFromCommand(powerOff);
+        }
     }
     else
     {
-        //safetyCheck(position);  // function call to check the safety of detection section
-        dsArray[position][1] = "Green";
-        ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
-        GetStdoutFromCommand(powerOn);
+        if (safety->isSafe((dsArray[position][0])))
+        {
+            dsArray[position][1] = "Green";
+            ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
+            GetStdoutFromCommand(powerOn);
+        }
     }
     writeTextBrowser();
     ui->progressBar->setValue(1);
 }
+
+
+void MainWindow::on_resetButton_clicked()
+{
+    ops = new INIOps(CONFIG_FILE);
+    safety = new SafetySys(CONFIG_FILE);
+    for (int i = 0; i < I; i++)
+        if (dsArray[i][1] == "Gray")
+            if (safety->isSafe(dsArray[i][0]))
+            {
+                dsArray[i][1] = "Black";
+                ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
+                writeTextBrowser();
+            }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 void *arduinoONE(void *ptr) {

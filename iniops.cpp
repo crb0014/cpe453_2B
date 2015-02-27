@@ -48,9 +48,9 @@ bool INIOps::writeINI(QString IP1, QString IP2, QString Array[I][J])
         if (Array[i][1] == "Gray")
             out << Array[i][0] << " = disabled\n";
         else if (Array[i][1] == "Red")
-            out << Array[i][0] << " = Red Status\n";
+            out << Array[i][0] << " = red\n";
         else if (Array[i][1] == "Yellow")
-            out << Array[i][0] << " = Yellow Status\n";
+            out << Array[i][0] << " = yellow\n";
     file.close();
     return false;
 }

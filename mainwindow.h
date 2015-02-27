@@ -47,6 +47,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_resetButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     INIOps * ops;
