@@ -7,16 +7,19 @@ QString ipAddrHolder;
 int arduinoNum;
 bool ipSet = false;
 
-popup::popup(QString addr,int arduino, QString arrayIN[I][J], QWidget *parent) :
+popup::popup(int arduino, QString Array[I][J], QWidget *parent) :
     QDialog(parent),
     ui(new Ui::popup)
 {
     ui->setupUi(this);
     ops = new INIOps(CONFIG_FILE);
-    ui->curentAddr->setText(addr);
+    if (arduino == 1)
+        ui->curentAddr->setText(ops->getIPArduino1());
+    else
+        ui->curentAddr->setText(ops->getIPArduino2());
     for (int i = 0; i < I; i++)
         for (int j = 0; j < J; j++)
-            array[i][j] = arrayIN[i][j];
+            array [i][j] = Array[i][j];
     arduinoNum = arduino;
     IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
     IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
@@ -35,7 +38,7 @@ popup::~popup()
  * @brief popup::on_newAddress_textEdited
  * @param arg1
  */
-void popup::on_newAddress_textEdited(const QString &arg1)
+void popup::on_newAddress_textEdited()
 {
     QRegExp ipValidator( "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}" );
     QValidator *validator = new QRegExpValidator(ipValidator, this);

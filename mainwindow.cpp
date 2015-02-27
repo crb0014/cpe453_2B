@@ -1,9 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <time.h>
-#include <string.h>
-#include <iostream>
-#include "config.h"
 
 void *arduinoONE(void *ptr);
 void *arduinoTWO(void *ptr);
@@ -17,15 +13,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setRange(0,1);
     ui->progressBar->setValue(0);
     ops = new INIOps(CONFIG_FILE);
+    safety = new SafetySys(CONFIG_FILE);
     IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
     IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
     ui->stateComboBox->addItem("Enable");
     ui->stateComboBox->addItem("Disable");
     for (int i = 0; i < MAX; i++) {
-        if(isDisabled(dsArray[i][0]) != "false")
-        {
+        if(safety->isDisabled(dsArray[i][0]))
             dsArray[i][1] = "Gray";
-        }
+        else if (safety->isRed(dsArray[i][0]))
+            dsArray[i][1] = "Red";
+        else if (safety->isYellow(dsArray[i][0]))
+            dsArray[i][1] = "Yellow";
         ui->dsComboBox->addItem(dsArray[i][0]);
     }
     writeTextBrowser();
@@ -68,19 +67,8 @@ void MainWindow::on_powerButton_clicked()
 }
 
 /**
- * @brief MainWindow::isDisabled
- * @param str
- * @return
+ * @brief MainWindow::writeTextBrowser
  */
-QString MainWindow::isDisabled(QString str)
-{
-    INIReader reader(CONFIG_FILE);
-    if(reader.ParseError() < 0)
-        qDebug() << "Can't load config file.";
-
-    return reader.Get("disabled",str.toStdString().c_str(),"false").c_str();
-}
-
 void MainWindow::writeTextBrowser()
 {
     QString str1;
@@ -102,21 +90,24 @@ void MainWindow::writeTextBrowser()
 }
 
 
-
 void MainWindow::on_actionChange_IP_Address_1_triggered()
 {
-    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_1,1,dsArray,this);
+    ops = new INIOps(CONFIG_FILE);
+    popup * myPopup = new popup(1,dsArray,this);
     myPopup->resize(300,125);
     myPopup->setWindowTitle("IP Change Arduino 1");
     myPopup->exec();
+    IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
 }
 
 void MainWindow::on_actionChange_IP_Address_2_triggered()
 {
-    popup * myPopup = new popup(IP_ADDRESS_ARDUINO_2,2,dsArray,this);
+    ops = new INIOps(CONFIG_FILE);
+    popup * myPopup = new popup(2,dsArray,this);
     myPopup->resize(300,125);
     myPopup->setWindowTitle("IP Change Arduino 2");
     myPopup->exec();
+    IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
 }
 
 QString GetStdoutFromCommand(QString cmd)
@@ -141,6 +132,7 @@ QString GetStdoutFromCommand(QString cmd)
  */
 void MainWindow::on_pushButton_clicked()
 {
+    ops = new INIOps(CONFIG_FILE);
     QString ds_state;
     int position;
     position = ui->dsComboBox->currentIndex();
@@ -152,19 +144,19 @@ void MainWindow::on_pushButton_clicked()
 
     if (stringPieces[0] == "ds1")
     {
-        powerOff = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/?" + dsArray[position][2] + "-off";
-        powerOn = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/?" + dsArray[position][2] + "-on";
+        powerOff = "curl -s http://" + ops->getIPArduino1() + "/?" + dsArray[position][2] + "-off";
+        powerOn = "curl -s http://" + ops->getIPArduino1() + "/?" + dsArray[position][2] + "-on";
     }
     else
     {
-        powerOff = "curl -s http://" + IP_ADDRESS_ARDUINO_2 + "/?" + dsArray[position][2] + "-off";
-        powerOn = "curl -s http://" + IP_ADDRESS_ARDUINO_2 + "/?" + dsArray[position][2] + "-on";
+        powerOff = "curl -s http://" + ops->getIPArduino2() + "/?" + dsArray[position][2] + "-off";
+        powerOn = "curl -s http://" + ops->getIPArduino2() + "/?" + dsArray[position][2] + "-on";
     }
 
     if (ds_state == "Disable")
     {
         dsArray[position][1] = "Gray";
-        ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,dsArray);
+        ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
         GetStdoutFromCommand(powerOff);
 
     }
@@ -172,18 +164,11 @@ void MainWindow::on_pushButton_clicked()
     {
         //safetyCheck(position);  // function call to check the safety of detection section
         dsArray[position][1] = "Green";
-        ops->writeINI(IP_ADDRESS_ARDUINO_1,IP_ADDRESS_ARDUINO_2,dsArray);
+        ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
         GetStdoutFromCommand(powerOn);
     }
     writeTextBrowser();
     ui->progressBar->setValue(1);
-}
-
-
-void MainWindow::safetyCheck(int position)
-{
-    // Add Code to check for broken rules related to detection section
-    dsArray[position][1] = "Green";
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +185,6 @@ void *arduinoONE(void *ptr) {
             {
                 powerOn = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "?" + dsArray[i][2] + "-on";
                 dsArray[i][1] = "Green";
-                //sleep(1);
             }
             GetStdoutFromCommand(powerOn);
         }

@@ -20,11 +20,11 @@ class popup : public QDialog
     Q_OBJECT
 
 public:
-    explicit popup(QString addr, int arduino, QString array[I][J], QWidget *parent = 0);
+    explicit popup(int arduino, QString Array[I][J], QWidget *parent = 0);
     ~popup();
 
 private slots:
-    void on_newAddress_textEdited(const QString &arg1);
+    void on_newAddress_textEdited();
 
     void on_newAddress_editingFinished();
 

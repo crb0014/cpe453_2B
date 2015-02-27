@@ -15,10 +15,16 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QGridLayout>
+#include <time.h>
+#include <string.h>
+#include <iostream>
 #include "wait.h"
 #include "popup.h"
 #include "inireader.h"
 #include "iniops.h"
+#include "safetysys.h"
+#include "config.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -44,9 +50,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
     INIOps * ops;
+    SafetySys * safety;
     void writeTextBrowser();
-    void safetyCheck(int position);
-    QString isDisabled(QString str);
+
 };
 
 #endif // MAINWINDOW_H

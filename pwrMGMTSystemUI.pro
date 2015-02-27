@@ -17,14 +17,20 @@ SOURCES += main.cpp\
     popup.cpp \
     inireader.cpp \
     ini.cpp \
-    iniops.cpp
+    iniops.cpp \
+    pwrmgmt.cpp \
+    safetysys.cpp \
+    sqlsys.cpp
 
 HEADERS  += mainwindow.h \
     popup.h \
     inireader.h \
     ini.h \
     config.h \
-    iniops.h
+    iniops.h \
+    pwrmgmt.h \
+    safetysys.h \
+    sqlsys.h
 
 FORMS    += mainwindow.ui \
     popup.ui

@@ -16,14 +16,16 @@ TEMPLATE = app
 SOURCES += tst_unittesttest.cpp \
     ../iniops.cpp \
     ../inireader.cpp \
-    ../ini.cpp
+    ../ini.cpp \
+    ../safetysys.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
     ../iniops.h \
     ../config.h \
     ../inireader.h \
-    ../ini.h
+    ../ini.h \
+    ../safetysys.h
 
 OTHER_FILES += \
     testConfig.ini
