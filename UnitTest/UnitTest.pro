@@ -12,12 +12,13 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-
 SOURCES += tst_unittesttest.cpp \
     ../iniops.cpp \
     ../inireader.cpp \
     ../ini.cpp \
-    ../safetysys.cpp
+    ../safetysys.cpp \
+    ../pwrmgmt.cpp \
+    ../sqlsys.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -25,7 +26,9 @@ HEADERS += \
     ../config.h \
     ../inireader.h \
     ../ini.h \
-    ../safetysys.h
+    ../safetysys.h \
+    ../pwrmgmt.h \
+    ../sqlsys.h
 
 OTHER_FILES += \
     testConfig.ini

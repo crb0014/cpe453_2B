@@ -1,0 +1,23 @@
+CREATE TABLE DS_Status
+(
+   DS TEXT PRIMARY KEY,
+   Status BOOLEAN,   
+   Color TEXT
+);
+
+INSERT INTO DS_Status VALUES('ds1_1_1', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_2', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_3', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_4', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_5', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_6', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_7', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_8', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_9', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_10', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_11', 'FALSE' ,'black'); 
+INSERT INTO DS_Status VALUES('ds1_1_12', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_13', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_14', 'FALSE' ,'black');      
+INSERT INTO DS_Status VALUES('ds1_1_15', 'FALSE' ,'black');
+INSERT INTO DS_Status VALUES('ds1_1_16', 'FALSE' ,'black');
