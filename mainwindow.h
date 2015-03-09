@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QProgressBar>
 #include <QFile>
 #include <QTextStream>
 #include <QString>
@@ -9,21 +10,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <pthread.h>
 #include <QAction>
 #include <QMessageBox>
 #include <QLineEdit>
 #include <QLabel>
 #include <QGridLayout>
+#include <pthread.h>
 #include <time.h>
+#include "wait.h"
 #include <string.h>
 #include <iostream>
-#include "wait.h"
 #include "popup.h"
 #include "inireader.h"
 #include "iniops.h"
 #include "safetysys.h"
+#include "pwrmgmt.h"
 #include "config.h"
+
+struct pthread_argument {
+    QProgressBar * bar;
+    int min;
+    int max;
+    int step;
+};
 
 
 namespace Ui {
@@ -53,6 +62,8 @@ private:
     Ui::MainWindow *ui;
     INIOps * ops;
     SafetySys * safety;
+    PWRMGMT * pwr;
+    pthread_argument args;
     void writeTextBrowser();
 
 };

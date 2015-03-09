@@ -7,7 +7,6 @@
  */
 SQLSys::SQLSys(QString dbType, QString dbName)
 {
-    model = new QSqlQueryModel;
     db = QSqlDatabase::addDatabase(dbType);
     db.setDatabaseName(dbName);
     if (dbType.contains(("QMYSQL")))

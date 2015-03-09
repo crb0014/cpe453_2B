@@ -28,9 +28,9 @@ bool SafetySys::isDisabled(QString str)
     if(reader.ParseError() < 0)
         qDebug() << "Can't load config file.";
 
-    QString holderString = reader.Get("disabled",str.toStdString().c_str(),"false").c_str();
+    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
 
-    if (holderString.compare("disabled"))
+    if (holderString.compare("gray"))
         return false;
     else
         return true;
@@ -47,7 +47,7 @@ bool SafetySys::isRed(QString str)
     if(reader.ParseError() < 0)
         qDebug() << "Can't load config file.";
 
-    QString holderString = reader.Get("disabled",str.toStdString().c_str(),"false").c_str();
+    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
 
     if (holderString.compare("red"))
         return false;
@@ -66,7 +66,7 @@ bool SafetySys::isYellow(QString str)
     if(reader.ParseError() < 0)
         qDebug() << "Can't load config file.";
 
-    QString holderString = reader.Get("disabled",str.toStdString().c_str(),"false").c_str();
+    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
 
     if (holderString.compare("yellow"))
         return false;

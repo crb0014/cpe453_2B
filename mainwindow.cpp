@@ -1,9 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-void *arduinoONE(void *ptr);
-void *arduinoTWO(void *ptr);
-QString GetStdoutFromCommand(QString cmd);
+void *pthread_progressBar(void *args);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,8 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progressBar->setValue(0);
     ops = new INIOps(CONFIG_FILE);
     safety = new SafetySys(CONFIG_FILE);
-    IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
-    IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
+
+    pwr = new PWRMGMT(dsArray,CONFIG_FILE);
     ui->stateComboBox->addItem("Enable");
     ui->stateComboBox->addItem("Disable");
     for (int i = 0; i < MAX; i++) {
@@ -37,30 +35,36 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_powerButton_clicked()
 {
-    pthread_t thread1;
-    const char *message1 = "Thread 1";
-    int iret1;
-    ui->progressBar->setRange(0,7);
-    ui->progressBar->setValue(0);
+    QString mode;
+    args.bar = ui->progressBar;
+    args.min = 0;
+    args.max = 8;
+    args.step = 1;
 
-    iret1 = pthread_create( &thread1, NULL, arduinoONE, (void*) message1);
+    pthread_t thread1;
+    int iret1;
+    if (ui->powerButton->text() == "Power On")
+        mode = "off";
+    else
+        mode = "on";
+
+    pwr = new PWRMGMT(dsArray,CONFIG_FILE);
+    iret1 = pthread_create(&thread1, NULL, pthread_progressBar, (void*) &args);
     if(iret1) {
         fprintf(stderr, "Error - pthread_create() return code: %d\n",iret1);
         exit(EXIT_FAILURE);
     }
+    if (mode == "off")
+        pwr->powerOnSystem();
+    else
+        pwr->powerOffSystem();
 
-    for (int i = 1; i < 8; i++)
-    {
-        ui->progressBar->setValue(i);
-        sleep(1);
-    }
-
+    pthread_join(thread1, NULL);
     if (ui->powerButton->text() == "Power On")
         ui->powerButton->setText("Power Off");
     else
         ui->powerButton->setText("Power On");
 
-    pthread_join(thread1, NULL);
     ui->progressBar->setRange(0,1);
     ui->progressBar->setValue(1);
     writeTextBrowser();
@@ -110,23 +114,6 @@ void MainWindow::on_actionChange_IP_Address_2_triggered()
     IP_ADDRESS_ARDUINO_2 = ops->getIPArduino2();
 }
 
-QString GetStdoutFromCommand(QString cmd)
-{
-    QString data;
-    FILE * stream;
-    const int max_buffer = 256;
-    char buffer[max_buffer];
-    cmd.append(" 2>&1");
-
-    stream = popen(cmd.toUtf8(), "r");
-    if (stream) {
-    while (!feof(stream))
-    if (fgets(buffer, max_buffer, stream) != NULL) data.append(buffer);
-        pclose(stream);
-    }
-    return data;
-}
-
 /**
  * @brief MainWindow::on_pushButton_clicked
  */
@@ -134,25 +121,21 @@ void MainWindow::on_pushButton_clicked()
 {
     ops = new INIOps(CONFIG_FILE);
     safety = new SafetySys(CONFIG_FILE);
-    QString ds_state;
+    pwr = new PWRMGMT(dsArray,CONFIG_FILE);
+    QString ds_state,IP,IP1,IP2;
+    IP1 = ops->getIPArduino1();
+    IP2 = ops->getIPArduino2();
     int position;
     position = ui->dsComboBox->currentIndex();
     ds_state = ui->stateComboBox->currentText();
     ui->progressBar->setValue(0);
     QStringList stringPieces = dsArray[position][0].split("_");
-    QString powerOff;
-    QString powerOn;
 
     if (stringPieces[0] == "ds1")
-    {
-        powerOff = "curl -s http://" + ops->getIPArduino1() + "/?" + dsArray[position][2] + "-off";
-        powerOn = "curl -s http://" + ops->getIPArduino1() + "/?" + dsArray[position][2] + "-on";
-    }
+        IP = ops->getIPArduino1();
     else
-    {
-        powerOff = "curl -s http://" + ops->getIPArduino2() + "/?" + dsArray[position][2] + "-off";
-        powerOn = "curl -s http://" + ops->getIPArduino2() + "/?" + dsArray[position][2] + "-on";
-    }
+        IP = ops->getIPArduino2();
+
 
     if (ds_state == "Disable")
     {
@@ -160,7 +143,7 @@ void MainWindow::on_pushButton_clicked()
         {
             dsArray[position][1] = "Gray";
             ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
-            GetStdoutFromCommand(powerOff);
+            pwr->powerOffDS(IP,dsArray[position][2]);
         }
     }
     else
@@ -169,9 +152,11 @@ void MainWindow::on_pushButton_clicked()
         {
             dsArray[position][1] = "Green";
             ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
-            GetStdoutFromCommand(powerOn);
+            pwr->powerOnDS(IP,dsArray[position][2]);
         }
     }
+
+    ops->writeINI(IP1,IP2,dsArray);
     writeTextBrowser();
     ui->progressBar->setValue(1);
 }
@@ -181,62 +166,33 @@ void MainWindow::on_resetButton_clicked()
 {
     ops = new INIOps(CONFIG_FILE);
     safety = new SafetySys(CONFIG_FILE);
+    QString ip1,ip2;
+    ip1 = ops->getIPArduino1();
+    ip2 = ops->getIPArduino2();
+    pwr = new PWRMGMT(dsArray,CONFIG_FILE);
+    pwr->powerOffSystem();
     for (int i = 0; i < I; i++)
-        if (dsArray[i][1] == "Gray")
-            if (safety->isSafe(dsArray[i][0]))
-            {
-                dsArray[i][1] = "Black";
-                ops->writeINI(ops->getIPArduino1(),ops->getIPArduino2(),dsArray);
-                writeTextBrowser();
-            }
+    {
+        if (safety->isSafe(dsArray[i][0]))
+        {
+            dsArray[i][1] = "Black";
+        }
+    }
+    ops->writeINI(ip1,ip2,dsArray);
+    ui->powerButton->setText("Power On");
+    writeTextBrowser();
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////
-void *arduinoONE(void *ptr) {
-
-    static bool state = true;
-    QString powerOn;// = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/%on";
-    QString powerOff;//f = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/%off";
-
-    if (state) {
-        for (int i = 0; i < MAX/2; i++)
-        {
-            if (dsArray[i][1] == "Black")
-            {
-                powerOn = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "?" + dsArray[i][2] + "-on";
-                dsArray[i][1] = "Green";
-            }
-            GetStdoutFromCommand(powerOn);
-        }
-        state = false;
-    } else {
-        for (int i = 0; i < MAX/2; i++)
-        {
-            if (dsArray[i][1] == "Green")
-            {
-                powerOff = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "?" + dsArray[i][2] + "-off";
-                dsArray[i][1] = "Black";
-            }
-            GetStdoutFromCommand(powerOff);
-        }
-        state = true;
+void *pthread_progressBar(void *args)
+{
+    pthread_argument *arg = (pthread_argument*) args;
+    arg->bar->setRange(arg->min,arg->max);
+    arg->bar->setValue(arg->min);
+    for (int i = arg->min; i < arg->max + 1; i+=arg->step)
+    {
+        arg->bar->setValue(i);
+        sleep(1);
     }
-    return ptr;
-}
-
-void *arduinoTWO(void *ptr) {
-
-    static bool state = true;
-    QString powerOn = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/%on";
-    QString powerOff = "curl -s http://" + IP_ADDRESS_ARDUINO_1 + "/%off";
-
-    if (state) {
-        GetStdoutFromCommand(powerOn);
-        state = false;
-    } else {
-        GetStdoutFromCommand(powerOff);
-        state = true;
-    }
-    return ptr;
+    pthread_exit(NULL);
 }

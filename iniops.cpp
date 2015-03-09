@@ -38,15 +38,15 @@ bool INIOps::writeINI(QString IP1, QString IP2, QString Array[I][J])
 
     out << "; config file for pwrMGMTUI\n"
         << "\n"
-        << "[arduino]\n"
+        << "[Arduino]\n"
         << "arduinoOneIP = " << IP1 << "\n"
         << "arduinoTwoIP = " << IP2 << "\n"
         << "\n"
-        << "[disabled]\n";
+        << "[Offline]\n";
 
     for (int i = 0; i < I; i++)
         if (Array[i][1] == "Gray")
-            out << Array[i][0] << " = disabled\n";
+            out << Array[i][0] << " = gray\n";
         else if (Array[i][1] == "Red")
             out << Array[i][0] << " = red\n";
         else if (Array[i][1] == "Yellow")
@@ -64,7 +64,7 @@ QString INIOps::getIPArduino1()
     if(checkForError())
         return "Error Occured Opening INI";
     else
-        return reader->Get("arduino","arduinoOneIP","None Provided").c_str();
+        return reader->Get("Arduino","arduinoOneIP","None Provided").c_str();
 }
 
 /**
@@ -76,5 +76,5 @@ QString INIOps::getIPArduino2()
     if(checkForError())
         return "Error Occured Opening INI";
     else
-        return reader->Get("arduino","arduinoTwoIP","None Provided").c_str();
+        return reader->Get("Arduino","arduinoTwoIP","None Provided").c_str();
 }

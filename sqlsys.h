@@ -21,7 +21,6 @@ class SQLSys
     private:
         QString QuaryDB(QString DS,QString FIELD);
         bool EditField(QString DS, QString FIELD, QString VALUE);
-        QSqlQueryModel* model; // no need to use in mainwindow just for testing purposes
         QSqlDatabase db; // Declaring Database
         QSqlQuery quary;
 
