@@ -19,6 +19,11 @@ SQLSys::SQLSys(QString dbType, QString dbName)
     quary = QSqlQuery(db);
 }
 
+bool SQLSys::disconnect()
+{
+    db.close();
+}
+
 /**
  * @brief SQLSys::GetDSColor
  * @return QString representing the color of the ds
@@ -34,7 +39,7 @@ QString SQLSys::getColor(QString ds)
  */
 bool SQLSys::getStatus(QString ds)
 {
-    if (QuaryDB(ds,"STATUS") == "TRUE")
+    if (QuaryDB(ds,"STATUS") == "1")
         return true;
     else
         return false;
@@ -60,9 +65,9 @@ bool SQLSys::setColor(QString DS, QString color)
 bool SQLSys::setStatus(QString DS, bool status)
 {
     if(status)
-        return EditField(DS,"STATUS","TRUE");
+        return EditField(DS,"STATUS","1");
     else
-        return EditField(DS,"STATUS","FALSE");
+        return EditField(DS,"STATUS","0");
 }
 
 /**
@@ -82,7 +87,10 @@ QStringList SQLSys::getTable()
             {
                 while (quary.next())
                 {
-                    results << quary.value(0).toString() << quary.value(1).toString() << quary.value(2).toString() << "\n";
+                    //QString temp = QString::number(quary.value(1).toInt());
+                    results << quary.value(0).toString();
+                    results << QString::number(quary.value(1).toInt());
+                    results << quary.value(2).toString() << "\n";
                 }
                 return results;
             }

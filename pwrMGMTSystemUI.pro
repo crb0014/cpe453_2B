@@ -27,7 +27,6 @@ HEADERS  += mainwindow.h \
     popup.h \
     inireader.h \
     ini.h \
-    config.h \
     iniops.h \
     pwrmgmt.h \
     safetysys.h \

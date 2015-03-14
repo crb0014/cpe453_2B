@@ -23,7 +23,6 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
     ../iniops.h \
-    ../config.h \
     ../inireader.h \
     ../ini.h \
     ../safetysys.h \

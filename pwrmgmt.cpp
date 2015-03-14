@@ -7,29 +7,26 @@ QString GetStdoutFromCommand(QString cmd);
 /**
  * @brief PWRMGMT::PWRMGMT
  */
-PWRMGMT::PWRMGMT(QString src[I][J], QString cFile)
+PWRMGMT::PWRMGMT(SQLSys *SQL, QString dsArray[I][J])
 {
     for (int i = 0; i < I; i++)
         for (int j = 0; j < J; j++)
         {
-            args1.pwrArray[i][j] = src[i][j];
-            args2.pwrArray[i][j] = src[i][j];
+            args1.pwrArray[i][j] = dsArray[i][j];
+            args2.pwrArray[i][j] = dsArray[i][j];
         }
-    SAFETY_CONFIG_FILE = cFile;
-    INI = new INIOps(SAFETY_CONFIG_FILE);
-    safety = new SafetySys(SAFETY_CONFIG_FILE);
-    IP1 = INI->getIPArduino1();
-    IP2 = INI->getIPArduino2();
-    args1.pwrIP = IP1;
-    args2.pwrIP = IP2;
+    safety = new SafetySys();
+    args1.pwrIP = "192.168.137.2";
+    args2.pwrIP = "192.168.137.3";
     args1.start = 0;
     args2.start = 64;
     args1.end = 64;
     args2.end = 128;
-    args1.ini = INI;
-    args2.ini = INI;
     args1.safety = safety;
     args2.safety = safety;
+    args1.sql = SQL;
+    args2.sql = SQL;
+    sql = SQL;
 }
 
 /**
@@ -38,9 +35,8 @@ PWRMGMT::PWRMGMT(QString src[I][J], QString cFile)
  */
 bool PWRMGMT::powerOnSystem()
 {
-    bool *state[2];
-    state[0] = false;
-    state[1] = false;
+    bool stateArduino1 = false;
+    bool stateArduino2 = false;
     pthread_t thread1, thread2;
     int iret1, iret2;
 
@@ -58,11 +54,11 @@ bool PWRMGMT::powerOnSystem()
     //    return false;
     //}
 
-    pthread_join(thread1,(void**)&state[0]);
-    //pthread_join(thread2,(void**)&state[1]);
+    pthread_join(thread1,(void**)&stateArduino1);
+    //pthread_join(thread2,(void**)&stateArduino2);
 
     //return (state[0] && state[1]);
-    return state[0];
+    return stateArduino1;
 }
 
 /**
@@ -71,9 +67,8 @@ bool PWRMGMT::powerOnSystem()
  */
 bool PWRMGMT::powerOffSystem()
 {
-    bool *state[2];
-    state[0] = false;
-    state[1] = false;
+    bool stateArduino1 = false;
+    bool stateArduino2 = false;
     pthread_t thread1, thread2;
     int iret1, iret2;
 
@@ -91,11 +86,11 @@ bool PWRMGMT::powerOffSystem()
     //    return false;
     //}
 
-    pthread_join(thread1,(void**)&state[0]);
+    pthread_join(thread1,(void**)&stateArduino1);
     //pthread_join(thread2,(void**)&state[1]);
 
     //return (state[0] && state[1]);
-    return state[0];
+    return stateArduino1;
 }
 
 /**
@@ -104,12 +99,18 @@ bool PWRMGMT::powerOffSystem()
  * @param pin
  * @return
  */
-bool PWRMGMT::powerOnDS(QString IP, QString pin)
+bool PWRMGMT::powerOnDS(QString IP, QString pin, QString ds)
 {
     QString power;
-    power = GetStdoutFromCommand("curl -s http://" + IP + "?" + pin + "-on");
+    power = GetStdoutFromCommand("curl -s http://" + IP + "/?" + pin + "-on");
     if (!power.contains(pin + " on"))
         return false;
+    sql->setStatus(ds,false);
+    if (safety->isSafe(ds))
+    {
+        sql->setStatus(ds,true);
+        sql->setColor(ds,"green");
+    }
     return true;
 }
 
@@ -119,10 +120,18 @@ bool PWRMGMT::powerOnDS(QString IP, QString pin)
  * @param pin
  * @return
  */
-bool PWRMGMT::powerOffDS(QString IP, QString pin)
+bool PWRMGMT::powerOffDS(QString IP, QString pin, QString ds)
 {
     QString power;
-    power = GetStdoutFromCommand("curl -s http://" + IP + "?" + pin + "-off");
+    power = GetStdoutFromCommand("curl -s http://" + IP + "/?" + pin + "-off");
+
+    sql->setStatus(ds,false);
+    if (safety->isSafe(ds))
+    {
+        sql->setStatus(ds,false);
+        sql->setColor(ds,"gray");
+    }
+
     if (!power.contains(pin + " off"))
         return false;
     return true;
@@ -168,24 +177,42 @@ void *arduino(void *ptr)
         pthread_exit((void*)false);
     }
 
-    for (int i = args->start + 1; i < args->end; i++)
+    for (int i = args->start; i < args->end; i++)
     {
-        //if (args->safety->isSafe(args->pwrArray[i][0]))
+        if (args->state == "on")
         {
-            if (args->state == "on")
+            if (args->safety->isSafe(args->pwrArray[i][0]))
             {
-                //if (!args->safety->isDisabled(args->pwrArray[i][0]))
+                if (args->safety->isDisabled(args->pwrArray[i][0]))
+                {
+                    args->sql->setStatus(args->pwrArray[i][0],false);
+                    args->sql->setColor(args->pwrArray[i][0],"gray");
+                }
+                else
                 {
                     power = "curl -s http://" + args->pwrIP + "/?" + args->pwrArray[i][2] + "-on";
-                    args->pwrArray[i][1] = "Green";
+                    args->sql->setStatus(args->pwrArray[i][0],true);
+                    args->sql->setColor(args->pwrArray[i][0],"green");
                 }
             }
-            else
+            else if (args->safety->isRed(args->pwrArray[i][0]))
             {
-                power = "curl -s http://" + args->pwrIP + "/?" + args->pwrArray[i][2] + "-off";
-                if (!args->safety->isDisabled(args->pwrArray[i][0]))
-                        args->pwrArray[i][1] = "Black";
+                args->sql->setColor(args->pwrArray[i][0],"red");
+                args->sql->setStatus(args->pwrArray[i][0],false);
             }
+            else if (args->safety->isYellow(args->pwrArray[i][0]))
+            {
+                args->sql->setColor(args->pwrArray[i][0],"yellow");
+                args->sql->setStatus(args->pwrArray[i][0],false);
+            }
+        }
+        else
+        {
+            power = "curl -s http://" + args->pwrIP + "/?" + args->pwrArray[i][2] + "-off";
+            args->sql->setStatus(args->pwrArray[i][0],false);
+            if (args->safety->isSafe(args->pwrArray[i][0]))
+                if (!args->safety->isDisabled((args->pwrArray[i][0])))
+                    args->sql->setColor(args->pwrArray[i][0],"black");
         }
         GetStdoutFromCommand(power);
     }

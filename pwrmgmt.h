@@ -9,8 +9,8 @@
 #include <pthread.h>
 #include <time.h>
 #include "wait.h"
-#include "iniops.h"
 #include "safetysys.h"
+#include "sqlsys.h"
 
 #define I 128
 #define J 3
@@ -20,25 +20,24 @@ struct arg_struct {
     QString pwrIP;
     QString state;
     int start,end;
-    INIOps * ini;
     SafetySys * safety;
+    SQLSys * sql;
 };
 
 class PWRMGMT
 {
 public:
-    PWRMGMT(QString src[I][J], QString cFile);
+    PWRMGMT(SQLSys *SQL, QString dsArray[I][J]);
     bool powerOnSystem();
     bool powerOffSystem();
-    bool powerOnDS(QString IP, QString pin);
-    bool powerOffDS(QString IP, QString pin);
+    bool powerOnDS(QString IP, QString pin, QString ds);
+    bool powerOffDS(QString IP, QString pin, QString ds);
     arg_struct args1,args2;
 private:
     QString IP1;
     QString IP2;
-    QString SAFETY_CONFIG_FILE;
-    INIOps * INI;
     SafetySys * safety;
+    SQLSys * sql;
 
 };
 

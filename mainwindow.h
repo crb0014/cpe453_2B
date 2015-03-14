@@ -25,7 +25,8 @@
 #include "iniops.h"
 #include "safetysys.h"
 #include "pwrmgmt.h"
-#include "config.h"
+
+#define MAX 128
 
 struct pthread_argument {
     QProgressBar * bar;

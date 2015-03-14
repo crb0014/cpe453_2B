@@ -1,8 +1,8 @@
 #include "safetysys.h"
 
-SafetySys::SafetySys(QString configFile)
+SafetySys::SafetySys()
 {
-    fileName = configFile;
+
 }
 
 /**
@@ -24,16 +24,7 @@ bool SafetySys::isSafe(QString str)
  */
 bool SafetySys::isDisabled(QString str)
 {
-    INIReader reader(fileName.toStdString());
-    if(reader.ParseError() < 0)
-        qDebug() << "Can't load config file.";
-
-    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
-
-    if (holderString.compare("gray"))
-        return false;
-    else
-        return true;
+    return false;
 }
 
 /**
@@ -43,16 +34,7 @@ bool SafetySys::isDisabled(QString str)
  */
 bool SafetySys::isRed(QString str)
 {
-    INIReader reader(fileName.toStdString());
-    if(reader.ParseError() < 0)
-        qDebug() << "Can't load config file.";
-
-    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
-
-    if (holderString.compare("red"))
-        return false;
-    else
-        return true;
+    return false;
 }
 
 /**
@@ -62,14 +44,5 @@ bool SafetySys::isRed(QString str)
  */
 bool SafetySys::isYellow(QString str)
 {
-    INIReader reader(fileName.toStdString());
-    if(reader.ParseError() < 0)
-        qDebug() << "Can't load config file.";
-
-    QString holderString = reader.Get("Offline",str.toStdString().c_str(),"false").c_str();
-
-    if (holderString.compare("yellow"))
-        return false;
-    else
-        return true;
+    return false;
 }

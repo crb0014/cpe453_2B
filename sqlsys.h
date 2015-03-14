@@ -17,6 +17,7 @@ class SQLSys
         bool setColor(QString DS, QString color); //Set specified DS_Key to specified color
         bool setStatus(QString DS, bool status); //Set specified DS_key to specified status
         bool isConnected(); // Test if connection was successfull
+        bool disconnect(); //
 
     private:
         QString QuaryDB(QString DS,QString FIELD);
