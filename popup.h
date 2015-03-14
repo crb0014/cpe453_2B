@@ -3,6 +3,7 @@
 
 #define I 128
 #define J 3
+#define CONFIG_FILE "/home/cboydston/Desktop/cpe453/pwrMGMTSystemUI/pwrMGMTSystemUI/config.ini"
 
 #include <QDialog>
 #include <QRegExpValidator>
@@ -36,6 +37,8 @@ private:
     Ui::popup *ui;
     INIOps * ops;
     QString array[I][J];
+    QString IP_ADDRESS_ARDUINO_1;
+    QString IP_ADDRESS_ARDUINO_2;
 };
 
 #endif // POPUP_H

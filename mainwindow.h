@@ -27,6 +27,9 @@
 #include "pwrmgmt.h"
 
 #define MAX 128
+#define CONFIG_FILE "/home/cboydston/Desktop/cpe453/pwrMGMTSystemUI/pwrMGMTSystemUI/config.ini"
+#define DB_FILE "/home/cboydston/Desktop/cpe453/pwrMGMTSystemUI/pwrMGMTSystemUI/relaystate.db"
+
 
 struct pthread_argument {
     QProgressBar * bar;
@@ -65,7 +68,10 @@ private:
     SafetySys * safety;
     PWRMGMT * pwr;
     pthread_argument args;
+    SQLSys * sql;
     void writeTextBrowser();
+    QString IP_ADDRESS_ARDUINO_1;
+    QString IP_ADDRESS_ARDUINO_2;
 
 };
 

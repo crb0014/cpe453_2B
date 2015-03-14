@@ -1,8 +1,0 @@
-; config file for pwrMGMTUI
-
-[arduino]
-arduinoOneIP = 192.168.137.2
-arduinoTwoIP = 1.2.3.4
-
-[disabled]
-ds1_1_1 = disabled

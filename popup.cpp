@@ -1,6 +1,5 @@
 #include "popup.h"
 #include "ui_popup.h"
-#include "config.h"
 #include <QDebug>
 
 QString ipAddrHolder;
