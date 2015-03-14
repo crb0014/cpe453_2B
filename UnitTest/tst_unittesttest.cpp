@@ -4,6 +4,7 @@
 #include "../safetysys.h"
 #include "../pwrmgmt.h"
 #include "../sqlsys.h"
+#include "../integration.h"
 
 // Casey School
 //#define TEST_CONFIG_FILE "..."
@@ -157,6 +158,7 @@ class UnitTestTest : public QObject
     Q_OBJECT
     INIOps * ops;
     SafetySys * safety;
+    Integration * translate;
     PWRMGMT * pwr;
     SQLSys * sql;
     QString ip1;
@@ -182,6 +184,10 @@ private Q_SLOTS:
     void testIsDisabledFalse();
     void testIsSafe();
     void testIsNotSafe();
+
+    // Integration Tests
+    void testTranslateExistingDS();
+    void testTranslateNonExistingDS();
 
     // SQLSys Tests
     void testIsConnected();
@@ -211,6 +217,7 @@ UnitTestTest::UnitTestTest()
 {
     safety = new SafetySys();
     sql = new SQLSys("QSQLITE",TEST_DB_FILE);
+    translate = new Integration();
 
     pwr = new PWRMGMT(sql,array);
     ip1 = "192.168.137.2";
@@ -321,6 +328,16 @@ void UnitTestTest::testIsNotSafe()
 void UnitTestTest::testIsSafe()
 {
 //    QVERIFY2(safety->isSafe("ds1_1_2") == true,"Error Occured, Did not Detect the Detection Section that is safe.");
+}
+
+void UnitTestTest::testTranslateExistingDS()
+{
+    QVERIFY2(translate->translate("ds1_1_1") == "bob,bob2,bob3","Error Occured, integration class did not return correct translation.");
+}
+
+void UnitTestTest::testTranslateNonExistingDS()
+{
+    QVERIFY2(translate->translate("Error") == "None","Error Occured, integration class returned data for non existant ds.");
 }
 
 /**
