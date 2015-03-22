@@ -21,8 +21,7 @@ SOURCES += main.cpp\
     iniops.cpp \
     pwrmgmt.cpp \
     safetysys.cpp \
-    sqlsys.cpp \
-    integration.cpp
+    sqlsys.cpp
 
 HEADERS  += mainwindow.h \
     popup.h \
@@ -32,7 +31,6 @@ HEADERS  += mainwindow.h \
     pwrmgmt.h \
     safetysys.h \
     sqlsys.h \
-    integration.h
 
 FORMS    += mainwindow.ui \
     popup.ui

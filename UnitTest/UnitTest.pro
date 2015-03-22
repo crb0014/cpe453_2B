@@ -18,8 +18,7 @@ SOURCES += tst_unittesttest.cpp \
     ../ini.cpp \
     ../safetysys.cpp \
     ../pwrmgmt.cpp \
-    ../sqlsys.cpp \
-    ../integration.cpp
+    ../sqlsys.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \
@@ -30,7 +29,6 @@ HEADERS += \
     ../pwrmgmt.h \
     ../sqlsys.h \
     ../dictionary.h \
-    ../integration.h
 
 OTHER_FILES += \
     testConfig.ini
