@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+// Global Shared Memory
+bool safety_thread_run = false;
+
 static QString dsArray[I][J] = {
     {"1_1","black","54"},
     {"1_2","black","55"},
@@ -133,16 +136,19 @@ static QString dsArray[I][J] = {
 };
 
 void *pthread_progressBar(void *args);
+void *pthread_safetySys(void *args);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    int iret_safety;
     ui->setupUi(this);
     ui->progressBar->setRange(0,1);
     ui->progressBar->setValue(0);
-    //ops = new INIOps(CONFIG_FILE);
     safety = new SafetySys();
+    ops = new INIOps(CONFIG_FILE);
+
 
     sql = new SQLSys("QSQLITE",DB_FILE);
     pwr = new PWRMGMT(sql,dsArray);
@@ -158,10 +164,22 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->dsComboBox->addItem(dsArray[i][0]);
     }
     writeTextBrowser();
+    safetyArgs.pwr = pwr;
+    safetyArgs.safety = safety;
+    safetyArgs.sql = sql;
+    safetyArgs.txtBrowser = ui->textBrowser;
+    safetyArgs.ops = ops;
+    iret_safety = pthread_create(&thread_safety, NULL, pthread_safetySys, (void*) &args);
+    if(iret_safety) {
+        fprintf(stderr, "Error - pthread_create() return code: %d\n",iret_safety);
+        exit(EXIT_FAILURE);
+    }
 }
 
 MainWindow::~MainWindow()
 {
+    safety_thread_run = false;
+    pthread_join(thread_safety, NULL);
     delete ui;
 }
 
@@ -327,4 +345,50 @@ void *pthread_progressBar(void *args)
         sleep(1);
     }
     pthread_exit(NULL);
+}
+
+void *pthread_safetySys(void *args)
+{
+    pthread_safety_argument *arg = (pthread_safety_argument*) args;
+    QString IP1 = arg->ops->getIPArduino1();
+    QString IP2 = arg->ops->getIPArduino2();
+    safety_thread_run = true;
+    bool change = false;
+    while (safety_thread_run)
+    {
+        sleep(1);
+        for (int i = 0; i < MAX; i++)
+        {
+            if (!arg->safety->isSafe(dsArray[i][0]))
+            {
+                change = true;
+                if (i < 64)
+                    arg->pwr->powerOffDS(IP1,dsArray[i][2],dsArray[i][1]);
+                else
+                    arg->pwr->powerOffDS(IP2,dsArray[i][2],dsArray[i][1]);
+            }
+            if (change)
+            {
+                QString str1;
+                arg->txtBrowser->clear();
+                arg->txtBrowser->append("------------------------------------------------------------");
+                arg->txtBrowser->append("Detection Section  |                 Status                 ");
+                arg->txtBrowser->append("------------------------------------------------------------");
+                for (int i = 0; i < MAX; i++)
+                {
+                    str1 = dsArray[i][0] + "                      |                " + arg->sql->getColor(dsArray[i][0]);
+                    if(arg->sql->getColor(dsArray[i][0])=="red") arg->txtBrowser->setTextColor(QColor("red"));
+                    else if(arg->sql->getColor(dsArray[i][0])=="yellow") arg->txtBrowser->setTextColor(QColor("orange"));
+                    else if(arg->sql->getColor(dsArray[i][0])=="green") arg->txtBrowser->setTextColor(QColor("green"));
+                    else if(arg->sql->getColor(dsArray[i][0]) == "gray") arg->txtBrowser->setTextColor("gray");
+                    else arg->txtBrowser->setTextColor("black");
+                    arg->txtBrowser->append(str1);
+                    arg->txtBrowser->append("------------------------------------------------------------");
+                }
+            }
+        }
+    }
+
+    pthread_exit(NULL);
+
 }

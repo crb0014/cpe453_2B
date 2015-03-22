@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <pthread.h>
+#include <QTextBrowser>
 #include <time.h>
 #include "wait.h"
 #include <string.h>
@@ -36,6 +37,14 @@ struct pthread_argument {
     int min;
     int max;
     int step;
+};
+
+struct pthread_safety_argument {
+    SafetySys * safety;
+    PWRMGMT * pwr;
+    SQLSys * sql;
+    INIOps * ops;
+    QTextBrowser *txtBrowser;
 };
 
 
@@ -62,14 +71,18 @@ private slots:
 
     void on_resetButton_clicked();
 
+    void writeTextBrowser();
+
+
 private:
     Ui::MainWindow *ui;
     INIOps * ops;
     SafetySys * safety;
     PWRMGMT * pwr;
     pthread_argument args;
+    pthread_safety_argument safetyArgs;
+    pthread_t thread_safety;
     SQLSys * sql;
-    void writeTextBrowser();
     QString IP_ADDRESS_ARDUINO_1;
     QString IP_ADDRESS_ARDUINO_2;
 
