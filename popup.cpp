@@ -6,6 +6,12 @@ QString ipAddrHolder;
 int arduinoNum;
 bool ipSet = false;
 
+/**
+ * @brief popup::popup
+ * @param arduino
+ * @param Array
+ * @param parent
+ */
 popup::popup(int arduino, QString Array[I][J], QWidget *parent) :
     QDialog(parent),
     ui(new Ui::popup)

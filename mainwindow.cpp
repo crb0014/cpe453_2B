@@ -176,6 +176,9 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 }
 
+/**
+ * @brief MainWindow::~MainWindow deconstructor
+ */
 MainWindow::~MainWindow()
 {
     safety_thread_run = false;
@@ -183,6 +186,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/**
+ * @brief MainWindow::on_powerButton_clicked power on/off system
+ */
 void MainWindow::on_powerButton_clicked()
 {
     QString mode;
@@ -221,7 +227,7 @@ void MainWindow::on_powerButton_clicked()
 }
 
 /**
- * @brief MainWindow::writeTextBrowser
+ * @brief MainWindow::writeTextBrowser to current status of relay
  */
 void MainWindow::writeTextBrowser()
 {
@@ -243,7 +249,10 @@ void MainWindow::writeTextBrowser()
     }
 }
 
-
+/**
+ * @brief MainWindow::on_actionChange_IP_Address_1_triggered
+ *        Popup to change IP address 1
+ */
 void MainWindow::on_actionChange_IP_Address_1_triggered()
 {
     ops = new INIOps(CONFIG_FILE);
@@ -254,6 +263,10 @@ void MainWindow::on_actionChange_IP_Address_1_triggered()
     IP_ADDRESS_ARDUINO_1 = ops->getIPArduino1();
 }
 
+/**
+ * @brief MainWindow::on_actionChange_IP_Address_2_triggered
+ *        Popup to change IP address 2
+ */
 void MainWindow::on_actionChange_IP_Address_2_triggered()
 {
     ops = new INIOps(CONFIG_FILE);
@@ -265,7 +278,7 @@ void MainWindow::on_actionChange_IP_Address_2_triggered()
 }
 
 /**
- * @brief MainWindow::on_pushButton_clicked
+ * @brief MainWindow::on_pushButton_clicked - power on/off selected detection seciton
  */
 void MainWindow::on_pushButton_clicked()
 {
@@ -281,7 +294,7 @@ void MainWindow::on_pushButton_clicked()
     ui->progressBar->setValue(0);
     QStringList stringPieces = dsArray[position][0].split("_");
 
-    if (stringPieces[0] == "ds1")
+    if (stringPieces[0] == "1" || stringPieces[0] == "2" || stringPieces[0] == "3" || stringPieces[0] =="4")
         IP = ops->getIPArduino1();
     else
         IP = ops->getIPArduino2();
@@ -311,7 +324,9 @@ void MainWindow::on_pushButton_clicked()
     ui->progressBar->setValue(1);
 }
 
-
+/**
+ * @brief MainWindow::on_resetButton_clicked - resets the status of all arduino pins to powered off
+ */
 void MainWindow::on_resetButton_clicked()
 {
     ops = new INIOps(CONFIG_FILE);
@@ -333,7 +348,11 @@ void MainWindow::on_resetButton_clicked()
     writeTextBrowser();
 }
 
-
+/**
+ * @brief pthread_progressBar - pthread used to allow the progress bar to update in parralell
+ * @param args
+ * @return
+ */
 void *pthread_progressBar(void *args)
 {
     pthread_argument *arg = (pthread_argument*) args;
@@ -347,6 +366,11 @@ void *pthread_progressBar(void *args)
     pthread_exit(NULL);
 }
 
+/**
+ * @brief pthread_safetySys - pthread used to run the safety system in the background
+ * @param args
+ * @return
+ */
 void *pthread_safetySys(void *args)
 {
     pthread_safety_argument *arg = (pthread_safety_argument*) args;

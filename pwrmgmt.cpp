@@ -6,6 +6,8 @@ QString GetStdoutFromCommand(QString cmd);
 
 /**
  * @brief PWRMGMT::PWRMGMT
+ * @param SQL
+ * @param dsArray
  */
 PWRMGMT::PWRMGMT(SQLSys *SQL, QString dsArray[I][J])
 {
@@ -31,7 +33,7 @@ PWRMGMT::PWRMGMT(SQLSys *SQL, QString dsArray[I][J])
 
 /**
  * @brief PWRMGMT::powerOnSystem
- * @return
+ * @return true/false if power on/off was successful
  */
 bool PWRMGMT::powerOnSystem()
 {
@@ -62,8 +64,8 @@ bool PWRMGMT::powerOnSystem()
 }
 
 /**
- * @brief powerOffSystem
- * @return
+ * @brief powerOffSystemff - creates threads for powering on/off each arduino
+ * @return true/false depending on success
  */
 bool PWRMGMT::powerOffSystem()
 {
@@ -94,10 +96,10 @@ bool PWRMGMT::powerOffSystem()
 }
 
 /**
- * @brief PWRMGMT::powerOnDS
+ * @brief PWRMGMT::powerOnDS - power on individual detection section
  * @param IP
  * @param pin
- * @return
+ * @return true/false depending on success
  */
 bool PWRMGMT::powerOnDS(QString IP, QString pin, QString ds)
 {
@@ -115,10 +117,10 @@ bool PWRMGMT::powerOnDS(QString IP, QString pin, QString ds)
 }
 
 /**
- * @brief PWRMGMT::powerOffDS
+ * @brief PWRMGMT::powerOffDS - power off individual detection section
  * @param IP
  * @param pin
- * @return
+ * @return true/false depending on success
  */
 bool PWRMGMT::powerOffDS(QString IP, QString pin, QString ds)
 {
@@ -138,9 +140,9 @@ bool PWRMGMT::powerOffDS(QString IP, QString pin, QString ds)
 }
 
 /**
- * @brief GetStdoutFromCommand
+ * @brief GetStdoutFromCommand - function for retrieving data from command line.
  * @param cmd
- * @return
+ * @return the terminal output of command line
  */
 QString GetStdoutFromCommand(QString cmd)
 {
@@ -160,7 +162,7 @@ QString GetStdoutFromCommand(QString cmd)
 }
 
 /**
- * @brief arduinoONE
+ * @brief arduinoONE - pthread function for powering on arduino
  * @param ptr
  * @return
  */

@@ -46,10 +46,10 @@ bool SQLSys::getStatus(QString ds)
 }
 
 /**
- * @brief SQLSys::Set_Color
+ * @brief SQLSys::Set_Color of detection section
  * @param row
  * @param color
- * @return
+ * @return true/false depending on success
  */
 bool SQLSys::setColor(QString DS, QString color)
 {
@@ -57,10 +57,10 @@ bool SQLSys::setColor(QString DS, QString color)
 }
 
 /**
- * @brief SQLSys::Set_Status
+ * @brief SQLSys::Set_Status of detection section
  * @param row
  * @param status
- * @return
+ * @return true/false depending on success
  */
 bool SQLSys::setStatus(QString DS, bool status)
 {
